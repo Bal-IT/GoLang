@@ -29,6 +29,8 @@ func checkBottlesCount(count int) {
 func bottlesCountToTxt(count int) string {
 	cn := count
 
+	cn %= 100
+
 	if cn > 19 {
 		cn %= 10
 	}
@@ -45,9 +47,12 @@ func bottlesCountToTxt(count int) string {
 
 func main() {
 	var cn int
-	fmt.Print("Введите количество бутылок: ")
-	fmt.Scanf("%d", &cn)
-	checkBottlesCount(cn)
-	fmt.Println(cn, bottlesCountToTxt(cn))
+	// fmt.Print("Введите количество бутылок: ")
+	// fmt.Scanf("%d", &cn)
+
+	for cn = 0; cn < 200; cn++ {
+		checkBottlesCount(cn)
+		fmt.Println(cn, bottlesCountToTxt(cn))
+	}
 
 }
