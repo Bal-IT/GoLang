@@ -47,12 +47,9 @@ func bottlesCountToTxt(count int) string {
 
 func main() {
 	var cn int
-	// fmt.Print("Введите количество бутылок: ")
-	// fmt.Scanf("%d", &cn)
+	fmt.Print("Введите количество бутылок: ")
+	fmt.Scanf("%d", &cn)
 
-	for cn = 0; cn < 200; cn++ {
-		checkBottlesCount(cn)
-		fmt.Println(cn, bottlesCountToTxt(cn))
-	}
-
+	checkBottlesCount(cn)
+	fmt.Println(cn, bottlesCountToTxt(cn))
 }
