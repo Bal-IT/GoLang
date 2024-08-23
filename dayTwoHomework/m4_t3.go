@@ -14,7 +14,7 @@ import (
 	"math"
 )
 
-func checkBottlesCount(count int) {
+func checkCoords(count int) {
 	if count < 0 {
 		log.Fatal("Координаты должны быть >=0!")
 	}
@@ -55,12 +55,12 @@ func main() {
 
 	fmt.Print("Введите координаты через пробел (x1, y1, x2, y2, x3, y3): ")
 	fmt.Scanf("%d %d %d %d %d %d", &x1, &y1, &x2, &y2, &x3, &y3)
-	checkBottlesCount(x1)
-	checkBottlesCount(y1)
-	checkBottlesCount(x2)
-	checkBottlesCount(y2)
-	checkBottlesCount(x3)
-	checkBottlesCount(y3)
+	checkCoords(x1)
+	checkCoords(y1)
+	checkCoords(x2)
+	checkCoords(y2)
+	checkCoords(x3)
+	checkCoords(y3)
 
 	if !checkTriangle(x1, y1, x2, y2, x3, y3) {
 		log.Fatal("По заданным координатам невозможно построить треугольник!")
