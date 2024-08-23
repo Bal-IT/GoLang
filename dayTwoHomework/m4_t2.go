@@ -21,7 +21,7 @@ Out: 22 бутылки
 */
 
 func checkBottlesCount(count int) {
-	if count < 1 || count > 200 {
+	if count < 0 || count > 200 {
 		log.Fatal("Количество бутылок должно быть от 0 до 200!")
 	}
 }
