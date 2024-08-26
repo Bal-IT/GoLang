@@ -65,7 +65,7 @@ func codeToString(code string) (string, error) {
 			return "", errors.New("невозможно подобрать ключ")
 		}
 
-		res += string(rune(ch) + rune('a'))
+		res += string(dicti[ch])
 	}
 	return res, nil
 }
