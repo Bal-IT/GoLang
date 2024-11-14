@@ -11,4 +11,4 @@ type Task struct {
 	Due  time.Time `json:"due"` // deadline date
 }
 
-type Tasks []Tasks
+type Tasks []Task

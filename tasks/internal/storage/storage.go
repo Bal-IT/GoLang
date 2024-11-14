@@ -88,7 +88,7 @@ func CreateTask(task tasks.Task) int {
 	// close prepared statement before exiting program
 	defer stmt.Close()
 
-	_, err = stmt.Exec(task.Task, task.Due)
+	_, err = stmt.Exec(task.Task, task.Due.Format(time.DateTime))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -177,7 +177,7 @@ group by t.id, t.task, t.due
 		ts.Tags = strings.Split(tag, ",")
 
 		date, err := time.Parse(time.DateTime, sdue)
-		if err != nil {
+		if err == nil {
 			ts.Due = date
 		}
 
@@ -188,4 +188,57 @@ group by t.id, t.task, t.due
 	}
 
 	return ts, true
+}
+
+func GetAllTask() (tasks.Tasks, bool) {
+	stmt, err := db.Prepare(`select t.id, t.task, t.due, group_concat(tg.tag) as tag
+from tasks t
+left join tags tg on t.id = tg.taskid
+group by t.id, t.task, t.due 
+		`)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query()
+	if err != nil {
+		log.Fatal(err)
+	}
+	// Rows must be closed
+	defer rows.Close()
+
+	var ts tasks.Task
+	var tasks tasks.Tasks
+
+	for rows.Next() {
+		var id int
+		var task string
+		var sdue string
+		var tag *string
+		// use pointers to get data
+		err = rows.Scan(&id, &task, &sdue, &tag)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		ts.Id = id
+		ts.Task = task
+
+		if tag != nil {
+			ts.Tags = strings.Split(*tag, ",")
+		}
+
+		date, err := time.Parse(time.DateTime, sdue)
+		if err == nil {
+			ts.Due = date
+		}
+
+		tasks = append(tasks, ts)
+	}
+	if len(tasks) == 0 {
+		return tasks, false
+	}
+
+	return tasks, true
 }

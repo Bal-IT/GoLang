@@ -98,6 +98,18 @@ func H_GetTask(w http.ResponseWriter, r *http.Request) {
 }
 
 func H_GetAllTasks(w http.ResponseWriter, r *http.Request) {
+	initHeaders(w)
+
+	tasks, ok := storage.GetAllTask()
+	log.Println("Get all task")
+	if !ok {
+		w.WriteHeader(http.StatusNotFound) // 404 error
+		message := Message{Message: "task with that ID does not exist in database."}
+		json.NewEncoder(w).Encode(message)
+	} else {
+		w.WriteHeader(http.StatusOK) // 200
+		json.NewEncoder(w).Encode(tasks)
+	}
 }
 
 func H_DeleteTask(w http.ResponseWriter, r *http.Request) {
