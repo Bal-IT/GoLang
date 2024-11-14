@@ -2,6 +2,7 @@ package storage
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -310,6 +311,61 @@ group by t.id, t.task, t.due
 	defer stmt.Close()
 
 	rows, err := stmt.Query(tag)
+	if err != nil {
+		log.Fatal(err)
+	}
+	// Rows must be closed
+	defer rows.Close()
+
+	var ts tasks.Task
+	var tasks tasks.Tasks
+
+	for rows.Next() {
+		var id int
+		var task string
+		var sdue string
+		var tag *string
+		// use pointers to get data
+		err = rows.Scan(&id, &task, &sdue, &tag)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		ts.Id = id
+		ts.Task = task
+
+		if tag != nil {
+			ts.Tags = strings.Split(*tag, ",")
+		}
+
+		date, err := time.Parse(time.DateTime, sdue)
+		if err == nil {
+			ts.Due = date
+		}
+
+		tasks = append(tasks, ts)
+	}
+	if len(tasks) == 0 {
+		return tasks, false
+	}
+
+	return tasks, true
+}
+
+func GetTasksByDue(yy, mm, dd int) (tasks.Tasks, bool) {
+	stmt, err := db.Prepare(`select t.id, t.task, t.due, group_concat(tg.tag) as tag
+from tasks t
+left join tags tg on t.id = tg.taskid
+where date(due) = ?
+group by t.id, t.task, t.due 
+		`)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer stmt.Close()
+
+	q := fmt.Sprintf("%d-%02d-%02d", yy+2000, mm, dd)
+	rows, err := stmt.Query(q)
 	if err != nil {
 		log.Fatal(err)
 	}

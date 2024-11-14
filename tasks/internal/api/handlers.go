@@ -171,4 +171,45 @@ func H_FindByTag(w http.ResponseWriter, r *http.Request) {
 }
 
 func H_DueTasks(w http.ResponseWriter, r *http.Request) {
+	initHeaders(w)
+
+	yy, err := strconv.Atoi(mux.Vars(r)["yy"])
+	if err != nil {
+		log.Println("Error occurs while parsing year field:", err)
+		w.WriteHeader(http.StatusBadRequest) // 400 error
+		message := Message{Message: "don't use year parametr as uncasted to int."}
+		json.NewEncoder(w).Encode(message)
+		return
+	}
+
+	mm, err := strconv.Atoi(mux.Vars(r)["mm"])
+	if err != nil {
+		log.Println("Error occurs while parsing month field:", err)
+		w.WriteHeader(http.StatusBadRequest) // 400 error
+		message := Message{Message: "don't use month parametr as uncasted to int."}
+		json.NewEncoder(w).Encode(message)
+		return
+	}
+
+	dd, err := strconv.Atoi(mux.Vars(r)["dd"])
+	if err != nil {
+		log.Println("Error occurs while parsing day field:", err)
+		w.WriteHeader(http.StatusBadRequest) // 400 error
+		message := Message{Message: "don't use day parametr as uncasted to int."}
+		json.NewEncoder(w).Encode(message)
+		return
+	}
+
+	tasks, ok := storage.GetTasksByDue(yy, mm, dd)
+
+	log.Println("Get tasks by tag date")
+	if !ok {
+		w.WriteHeader(http.StatusNotFound) // 404 error
+		message := Message{Message: "task with that date does not exist in database."}
+		json.NewEncoder(w).Encode(message)
+	} else {
+		w.WriteHeader(http.StatusOK) // 200
+		json.NewEncoder(w).Encode(tasks)
+	}
+
 }
