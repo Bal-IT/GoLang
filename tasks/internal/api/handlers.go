@@ -113,6 +113,28 @@ func H_GetAllTasks(w http.ResponseWriter, r *http.Request) {
 }
 
 func H_DeleteTask(w http.ResponseWriter, r *http.Request) {
+	initHeaders(w)
+	id, err := strconv.Atoi(mux.Vars(r)["id"])
+	if err != nil {
+		log.Println("Error occurs while parsing id field:", err)
+		w.WriteHeader(http.StatusBadRequest) // 400 error
+		message := Message{Message: "don't use ID parametr as uncasted to int."}
+		json.NewEncoder(w).Encode(message)
+		return
+	}
+
+	err = storage.DeleteTask(id)
+
+	log.Println("Get task with id:", id)
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound) // 404 error
+		message := Message{Message: err.Error()}
+		json.NewEncoder(w).Encode(message)
+	} else {
+		w.WriteHeader(http.StatusOK) // 200
+		json.NewEncoder(w).Encode(Message{Message: "Task deleted"})
+	}
+
 }
 
 func H_DeleteAllTasks(w http.ResponseWriter, r *http.Request) {

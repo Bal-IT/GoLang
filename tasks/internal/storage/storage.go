@@ -242,3 +242,35 @@ group by t.id, t.task, t.due
 
 	return tasks, true
 }
+
+func DeleteTask(id int) error {
+
+	tx, err := db.Begin()
+
+	stmt, err := db.Prepare("delete from tasks where id = ?")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	_, err = stmt.Exec(id)
+	if err != nil {
+		return err
+	}
+
+	stmt, err = db.Prepare("delete from tags where taskid = ?")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	_, err = stmt.Exec(id)
+	if err != nil {
+		return err
+	}
+
+	// Commit the transaction
+	if err := tx.Commit(); err != nil {
+		log.Fatal(err)
+	}
+
+	return nil
+}
