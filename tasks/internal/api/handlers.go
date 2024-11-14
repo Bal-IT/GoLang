@@ -4,8 +4,11 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strconv"
 	"tesks-service/internal/storage"
 	"tesks-service/internal/tasks"
+
+	"github.com/gorilla/mux"
 )
 
 /*
@@ -33,7 +36,16 @@ type Message struct {
 	Message string
 }
 
+type LastInsertId struct {
+	Id int `json:"id"`
+}
+
+func initHeaders(writer http.ResponseWriter) {
+	writer.Header().Set("Content-Type", "application/json")
+}
+
 func H_CreateTask(w http.ResponseWriter, r *http.Request) {
+	initHeaders(w)
 	log.Println("Creating new task ...")
 	var task tasks.Task
 
@@ -47,11 +59,42 @@ func H_CreateTask(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(message)
 		return
 	}
-	storage.CreateTask(task)
+	id := storage.CreateTask(task)
 
+	if id < 1 {
+		w.WriteHeader(http.StatusBadRequest) // 400 error
+		message := Message{Message: "Что-то пошо не так"}
+		json.NewEncoder(w).Encode(message)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK) // 200
+	lastInsertId := LastInsertId{Id: id}
+	json.NewEncoder(w).Encode(lastInsertId)
 }
 
 func H_GetTask(w http.ResponseWriter, r *http.Request) {
+	initHeaders(w)
+	id, err := strconv.Atoi(mux.Vars(r)["id"])
+	if err != nil {
+		log.Println("Error occurs while parsing id field:", err)
+		w.WriteHeader(http.StatusBadRequest) // 400 error
+		message := Message{Message: "don't use ID parametr as uncasted to int."}
+		json.NewEncoder(w).Encode(message)
+		return
+	}
+
+	task, ok := storage.GetTask(id)
+	log.Println("Get task with id:", id)
+	if !ok {
+		w.WriteHeader(http.StatusNotFound) // 404 error
+		message := Message{Message: "task with that ID does not exist in database."}
+		json.NewEncoder(w).Encode(message)
+	} else {
+		w.WriteHeader(http.StatusOK) // 200
+		json.NewEncoder(w).Encode(task)
+	}
+
 }
 
 func H_GetAllTasks(w http.ResponseWriter, r *http.Request) {

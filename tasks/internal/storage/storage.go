@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"tesks-service/internal/tasks"
+	"time"
 
 	_ "modernc.org/sqlite"
 )
@@ -73,7 +74,7 @@ func Open() {
 	// defer db.Close()
 }
 
-func CreateTask(task tasks.Task) {
+func CreateTask(task tasks.Task) int {
 	tx, err := db.Begin()
 	if err != nil {
 		log.Fatal(err)
@@ -96,9 +97,6 @@ func CreateTask(task tasks.Task) {
 		log.Fatal(err)
 	}
 
-	if len(task.Tags) == 0 {
-		return
-	}
 	// Получаем ID
 	rows, err := db.Query("SELECT last_insert_rowid()")
 	if err != nil {
@@ -109,6 +107,10 @@ func CreateTask(task tasks.Task) {
 	var lastId int
 	for rows.Next() {
 		rows.Scan(&lastId)
+	}
+
+	if len(task.Tags) == 0 {
+		return lastId
 	}
 
 	// Теги
@@ -132,4 +134,50 @@ func CreateTask(task tasks.Task) {
 	if err := tx2.Commit(); err != nil {
 		log.Fatal(err)
 	}
+
+	return lastId
+}
+
+func GetTask(id int) (tasks.Task, bool) {
+	stmt, err := db.Prepare("SELECT id, task, due FROM tasks WHERE id = ?")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query(id)
+	if err != nil {
+		log.Fatal(err)
+	}
+	// Rows must be closed
+	defer rows.Close()
+
+	var ts tasks.Task
+
+	ok := false
+	for rows.Next() {
+		var id int
+		var task string
+		var sdue string
+		// use pointers to get data
+		err = rows.Scan(&id, &task, &sdue)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		ts.Id = id
+		ts.Task = task
+
+		date, err := time.Parse(time.DateTime, sdue)
+		if err != nil {
+			ts.Due = date
+		}
+
+		ok = true
+	}
+	if !ok {
+		return ts, false
+	}
+
+	return ts, true
 }
