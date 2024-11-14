@@ -274,3 +274,25 @@ func DeleteTask(id int) error {
 
 	return nil
 }
+
+func DeleteAllTasks() error {
+
+	tx, err := db.Begin()
+
+	stmt, err := db.Prepare("delete from tasks ")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	_, err = stmt.Exec()
+	if err != nil {
+		return err
+	}
+
+	// Commit the transaction
+	if err := tx.Commit(); err != nil {
+		log.Fatal(err)
+	}
+
+	return nil
+}

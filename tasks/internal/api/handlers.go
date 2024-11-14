@@ -127,7 +127,7 @@ func H_DeleteTask(w http.ResponseWriter, r *http.Request) {
 
 	log.Println("Get task with id:", id)
 	if err != nil {
-		w.WriteHeader(http.StatusNotFound) // 404 error
+		w.WriteHeader(http.StatusInternalServerError)
 		message := Message{Message: err.Error()}
 		json.NewEncoder(w).Encode(message)
 	} else {
@@ -138,6 +138,19 @@ func H_DeleteTask(w http.ResponseWriter, r *http.Request) {
 }
 
 func H_DeleteAllTasks(w http.ResponseWriter, r *http.Request) {
+	initHeaders(w)
+
+	err := storage.DeleteAllTasks()
+
+	log.Println("Get all tasks")
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		message := Message{Message: err.Error()}
+		json.NewEncoder(w).Encode(message)
+	} else {
+		w.WriteHeader(http.StatusOK) // 200
+		json.NewEncoder(w).Encode(Message{Message: "Tasks deleted"})
+	}
 }
 
 func H_FindByTag(w http.ResponseWriter, r *http.Request) {
