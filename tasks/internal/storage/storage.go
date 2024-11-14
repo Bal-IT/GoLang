@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"log"
 	"os"
+	"strings"
 	"tesks-service/internal/tasks"
 	"time"
 
@@ -139,7 +140,12 @@ func CreateTask(task tasks.Task) int {
 }
 
 func GetTask(id int) (tasks.Task, bool) {
-	stmt, err := db.Prepare("SELECT id, task, due FROM tasks WHERE id = ?")
+	stmt, err := db.Prepare(`select t.id, t.task, t.due, group_concat(tg.tag) as tag
+from tasks t
+left join tags tg on t.id = tg.taskid
+where t.id = ?
+group by t.id, t.task, t.due 
+		`)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -159,14 +165,16 @@ func GetTask(id int) (tasks.Task, bool) {
 		var id int
 		var task string
 		var sdue string
+		var tag string
 		// use pointers to get data
-		err = rows.Scan(&id, &task, &sdue)
+		err = rows.Scan(&id, &task, &sdue, &tag)
 		if err != nil {
 			log.Fatal(err)
 		}
 
 		ts.Id = id
 		ts.Task = task
+		ts.Tags = strings.Split(tag, ",")
 
 		date, err := time.Parse(time.DateTime, sdue)
 		if err != nil {
