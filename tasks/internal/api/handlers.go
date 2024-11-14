@@ -154,6 +154,20 @@ func H_DeleteAllTasks(w http.ResponseWriter, r *http.Request) {
 }
 
 func H_FindByTag(w http.ResponseWriter, r *http.Request) {
+	initHeaders(w)
+	tag := mux.Vars(r)["tag"]
+
+	tasks, ok := storage.GetTasksByTag(tag)
+
+	log.Println("Get tasks by tag:", tag)
+	if !ok {
+		w.WriteHeader(http.StatusNotFound) // 404 error
+		message := Message{Message: "task with that tag does not exist in database."}
+		json.NewEncoder(w).Encode(message)
+	} else {
+		w.WriteHeader(http.StatusOK) // 200
+		json.NewEncoder(w).Encode(tasks)
+	}
 }
 
 func H_DueTasks(w http.ResponseWriter, r *http.Request) {

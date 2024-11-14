@@ -39,7 +39,7 @@ func (a *API) configreRouterField() {
 	a.router.HandleFunc("/tasks/", H_GetAllTasks).Methods("GET")
 	a.router.HandleFunc("/tasks/{id}", H_DeleteTask).Methods("DELETE")
 	a.router.HandleFunc("/tasks/", H_DeleteAllTasks).Methods("DELETE")
-	a.router.HandleFunc("/tags/{id}", H_FindByTag).Methods("GET")
+	a.router.HandleFunc("/tags/{tag}", H_FindByTag).Methods("GET")
 	a.router.HandleFunc("/due/{yy}/{mm}/{dd}", H_DueTasks).Methods("GET")
 
 }
